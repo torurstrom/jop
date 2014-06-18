@@ -15,6 +15,7 @@ class Scheduler implements Runnable {
 	// ordered by priority
 	int next[];					// next time to change to state running
 	RtThreadImpl[] ref;			// references to threads
+	int[] pri;			// active thread priorities
 
 	final static int NO_EVENT = 0;
 	final static int EV_FIRED = 1;
@@ -102,23 +103,28 @@ class Scheduler implements Runnable {
 		//	cnt should NOT contain idle thread
 		//	change this some time
 		k = IDL_TICK;
-
+		int k_pri = Integer.MIN_VALUE; // priority of thread with next interrupt time
 		// this is now
 		j = Native.rd(Const.IO_US_CNT);
-
-		for (i=cnt-1; i>0; --i) {
-
-			if (event[i] == EV_FIRED) {
-				break;						// a pending event found
-			} else if (event[i] == NO_EVENT) {
-				diff = next[i]-j;			// check only periodic
-				if (diff < TIM_OFF) {
-					break;					// found a ready task
-				} else if (diff < k) {
-					k = diff;				// next interrupt time of higher priority thread
+		int cur = 0; // idle task/main thread is default
+		for (i=1; i<cnt; i++) {
+			if(cur == 0 || pri[cur] > pri[i]) {
+				if (event[i] == EV_FIRED) {
+					//break;						// a pending event found
+					cur = i;
+				} else if (event[i] == NO_EVENT) {
+					diff = next[i]-j;			// check only periodic
+					if (diff < TIM_OFF) {
+						//break;					// found a ready task
+						cur = i;
+					} else if (diff < k && (pri[cur] >= k_pri)) {
+						k = diff;				// next interrupt time of higher priority thread
+						k_pri = pri[cur];
+					}
 				}
 			}
 		}
+		i = cur;
 		// i is next ready thread (index into the list)
 		// If none is ready i points to idle task or main thread (fist in the list)
 		active = i;

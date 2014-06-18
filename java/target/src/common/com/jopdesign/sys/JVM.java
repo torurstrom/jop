@@ -126,8 +126,8 @@ class JVM {
 					// Handler version (default)
 					int ref_level; 
 					int val_level; 
-					ref_level = Native.rdMem(ref + GC.OFF_SPACE);
-					val_level = Native.rdMem(value + GC.OFF_SPACE);
+					ref_level = 0x0000FFFF & Native.rdMem(ref + GC.OFF_SPACE);
+					val_level = 0x0000FFFF & Native.rdMem(value + GC.OFF_SPACE);
 					if (val_level > ref_level){
 						GC.log("Illegal array reference");
 					};
@@ -982,8 +982,53 @@ class JVM {
 
 	}
 	
-	private static void f_monitorenter(int objAddr) {JVMHelp.noim(); /* jvm.asm */ }
-	private static void f_monitorexit(int objAddr) {JVMHelp.noim(); /* jvm.asm */ }
+	private static void f_monitorenter(int objAddr) {
+		if(RtThreadImpl.mission == false) {
+			// Should only happen in single thread context
+			Native.lock(objAddr);
+			return;
+		}
+		// We assume that object priorities are only manipulated during startup so this should be safe without synchronization
+		int pri = Native.rdMem(objAddr + GC.OFF_PRI)>>16;
+		if(pri == 0x80000000) {
+			// No priority set so use default
+			pri = Const.DEFAULT_CEILING;
+		}
+		Scheduler s = Scheduler.sched[Scheduler.sys.cpuId];
+		RtThreadImpl th = s.ref[s.active];
+		if(pri > th.lck_pri[th.lck_ptr]) {
+			// Update bread crumb
+			th.lck_ptr++;
+			th.lck_cnt[th.lck_ptr]++;
+			th.lck_pri[th.lck_ptr] = pri;
+			// Update the thread's priority
+			s.pri[s.active] = pri;
+		}
+		else {
+			// Lock's priority is lower than current thread's so only update entry count
+			th.lck_cnt[th.lck_ptr]++;
+		}
+		
+		// Loops until the lock is actually acquired
+		Native.lock(objAddr);
+	}
+	private static void f_monitorexit(int objAddr) {
+		// Release lock before priority is manipulated
+		Native.unlock(objAddr);
+		if(RtThreadImpl.mission == false) {
+			return;
+		}
+		
+		Scheduler s = Scheduler.sched[Scheduler.sys.cpuId];
+		RtThreadImpl th = s.ref[s.active];
+		th.lck_cnt[th.lck_ptr]--;
+		if(th.lck_cnt[th.lck_ptr] == 0) {
+			// Update bread crumb
+			th.lck_ptr--;
+			// Update the thread's priority
+			s.pri[s.active] = th.lck_pri[th.lck_ptr];
+		}
+	}
 
 	private static void f_wide() { JVMHelp.noim();}
 	
@@ -1106,7 +1151,7 @@ class JVM {
 
 				// Handler version (Default)
 					int val_level; 
-					val_level = Native.rdMem(val + GC.OFF_SPACE);
+					val_level = 0x0000FFFF & Native.rdMem(val + GC.OFF_SPACE);
 					if (val_level != 0){
 						GC.log("Illegal static reference");
 						}
@@ -1146,8 +1191,8 @@ class JVM {
 				// Handler version (default)
 					int ref_level; 
 					int val_level; 
-					ref_level = Native.rdMem(ref + GC.OFF_SPACE);
-					val_level = Native.rdMem(value + GC.OFF_SPACE);
+					ref_level = 0x0000FFFF & Native.rdMem(ref + GC.OFF_SPACE);
+					val_level = 0x0000FFFF & Native.rdMem(value + GC.OFF_SPACE);
 					if (val_level > ref_level){
 						//GC.log("Illegal field reference");
 					}

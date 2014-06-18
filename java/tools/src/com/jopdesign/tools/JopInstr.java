@@ -320,8 +320,8 @@ public class JopInstr{
 
 		new JopInstr("checkcast", 3, IMP_JAVA, 1),		// 0xC0
 		new JopInstr("instanceof", 3, IMP_JAVA, 1),		// 0xC1
-		new JopInstr("monitorenter", 1, IMP_ASM, 1),		// 0xC2
-		new JopInstr("monitorexit", 1, IMP_ASM, 1),		// 0xC3
+		new JopInstr("monitorenter", 1, IMP_JAVA, 1),		// 0xC2
+		new JopInstr("monitorexit", 1, IMP_JAVA, 1),		// 0xC3
 		new JopInstr("wide", 0, IMP_NO, 1),				// 0xC4
 		new JopInstr("multianewarray", 4, IMP_JAVA, 1),	// 0xC5
 		new JopInstr("ifnull", 3, IMP_ASM, 1),			// 0xC6
@@ -422,8 +422,8 @@ public class JopInstr{
 			"toInt", "jopsys_nop",
 			"toDouble", "jopsys_nop",
 			"toRtThreadImpl", "jopsys_nop",
-			"lock", "monitorenter",
-			"unlock", "monitorexit",
+			"lock", "jopsys_lock",
+			"unlock", "jopsys_unlock",
 			"condMove", "jopsys_cond_move",
 			"condMoveRef", "jopsys_cond_move",
 			"invalidate", "jopsys_inval",

@@ -68,6 +68,8 @@ public class GC {
 	public static final int OFF_PTR = 0;
 	public static final int OFF_MTAB_ALEN = 1;
 	public static final int OFF_SPACE = 2;
+	// Lock priority is shared with scope level
+	public static final int OFF_PRI = OFF_SPACE;
 	public static final int OFF_TYPE = 3;
 	
 	// Scope level shares the to/from pointer
@@ -584,7 +586,7 @@ public class GC {
 				}
 				
 				//Add scope info to object's handler field
-				Native.wrMem(sc.level, ptr+OFF_SCOPE_LEVEL);
+				Native.wrMem(0x80000000 | sc.level, ptr+OFF_SCOPE_LEVEL);
 				
 				// Add scoped memory area info into objects handle
 				// TODO: Choose an appropriate field since we also want scope level info in handle 
@@ -708,7 +710,7 @@ public class GC {
 				}
 				
 				//Add scope info to array's handler field
-				Native.wrMem(sc.level, ptr+OFF_SCOPE_LEVEL);
+				Native.wrMem(0x80000000 | sc.level, ptr+OFF_SCOPE_LEVEL);
 				
 				// Add scoped memory area info into array handle
 				// TODO: Choose an appropriate field since we also want scope level info in handle

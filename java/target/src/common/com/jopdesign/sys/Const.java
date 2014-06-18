@@ -106,6 +106,8 @@ public class Const {
 	public static final int SCRATCHPAD_ADDRESS = 0x400000;
 	
 
+	public static final int DEFAULT_CEILING = 39;
+	
 	/**
 	 * Constant pool pointer offset in on-chip stack cache.
 	 * Constants for JVM register (on-chip RAM)

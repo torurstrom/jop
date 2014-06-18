@@ -96,7 +96,12 @@ public class RtThreadImpl {
 
 
 	RtThread rtt;		// reference to RtThread's run method
-	private int priority;
+	int priority;
+	// Bread crumbs for tracking priorities
+	int[] lck_pri;
+	int[] lck_cnt;
+	int lck_ptr;
+	
 	private int period;			// period in us
 	private int offset;			// offset in us
 	private boolean isEvent;	// it's a software event

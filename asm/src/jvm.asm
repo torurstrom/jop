@@ -1462,7 +1462,7 @@ saload:
 			wait
 			ldmrd nxt
 
-monitorenter:
+jopsys_lock:
 			// disable interrupts
 			ldi	io_int_ena
 			stmwa				// write ext. mem address
@@ -1509,7 +1509,7 @@ monitorenter:
 monitorenter_ok:        
 			nop nxt
 
-monitorexit:
+jopsys_unlock:
 			// write lock ref to islu
 			ldi	io_cpu_id
 			stmwa				// write ext. mem address
