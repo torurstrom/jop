@@ -186,9 +186,11 @@ exc_np		=	2
 exc_ab		=	3
 exc_mon     =   5
         
-io_lock = -123
+io_lck_stat = -123
+io_lck_rel = -122
 io_cpu_id = -122
 io_signal = -121
+io_lck_req = -117
 
 usb_status	=	-96
 usb_data	=	-95
@@ -1471,30 +1473,42 @@ jopsys_lock:
 			wait
 			wait
 			
-			// increment lock count
-			ldm	lockcnt
-			ldi	1
-			add
-			stm	lockcnt
-			
 			// request the global lock
-			ldi	io_lock
+			ldi	io_lck_req
 			stmwa				// write ext. mem address
 			stmwd				// write ext. mem data
 			wait
 			wait
 			
+jopsys_lock_loop:
+			
 			// read value from islu
-			ldi io_lock
+			ldi io_lck_stat
 			stmra
 			wait
 			wait
 			ldmrd
 			
+			// enable interrupts
+			ldi	io_int_ena
+			stmwa
+			ldi 1
+			stmwd				// write ext. mem data
+			wait
+			wait
+			
 			// if (value from islu == 0) exit
+			dup
+			nop
+			bz jopsys_lock_ok
 			nop
 			nop
-			bz monitorenter_ok
+			
+			// if (value from islu == 1) continue
+			ldi 1
+			sub
+			nop
+			bz jopsys_lock_retry
 			nop
 			nop
 			
@@ -1506,28 +1520,51 @@ jopsys_lock:
 			wait
 			wait
 			nop nxt
-monitorenter_ok:        
-			nop nxt
+			
+jopsys_lock_retry:
 
-jopsys_unlock:
-			// write lock ref to islu
-			ldi	io_cpu_id
+			// disable interrupts
+			ldi	io_int_ena
+			stmwa				// write ext. mem address
+			ldi	0
+			stmwd				// write ext. mem data
+			wait
+			wait
+			
+			// request the lock status
+			ldi	io_lck_stat
 			stmwa				// write ext. mem address
 			stmwd				// write ext. mem data
 			wait
 			wait
-
-			// decrement lock count
-			ldm	lockcnt
-			ldi	1
-			sub
-			dup
-			stm	lockcnt
 			
-			// if (lock count != 0) exit
-			bnz	monitorexit_no_ena
+			// just to jump to jopsys_lock_loop
+			ldi 1
 			nop
 			nop
+			bnz jopsys_lock_loop
+			nop
+			nop
+			
+jopsys_lock_ok:        
+			pop nxt
+
+jopsys_unlock:
+
+			// disable interrupts
+			ldi	io_int_ena
+			stmwa				// write ext. mem address
+			ldi	0
+			stmwd				// write ext. mem data
+			wait
+			wait
+
+			// write lock ref to islu
+			ldi	io_lck_rel
+			stmwa				// write ext. mem address
+			stmwd				// write ext. mem data
+			wait
+			wait
 			
 			// enable interrupts
 			ldi	io_int_ena
@@ -1536,7 +1573,7 @@ jopsys_unlock:
 			stmwd				// write ext. mem data
 			wait
 			wait
-monitorexit_no_ena:	nop nxt
+			nop nxt
 
 //		
 // long bytecodes

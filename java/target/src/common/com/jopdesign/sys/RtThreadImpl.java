@@ -98,9 +98,9 @@ public class RtThreadImpl {
 	RtThread rtt;		// reference to RtThread's run method
 	int priority;
 	// Bread crumbs for tracking priorities
-	int[] lck_pri;
-	int[] lck_cnt;
-	int lck_ptr;
+	int[] lck_pri = {0,0};
+	int[] lck_cnt = {1,0};
+	int lck_ptr = 0;
 	
 	private int period;			// period in us
 	private int offset;			// offset in us
@@ -190,6 +190,7 @@ for (int i=0; i<Const.STACK_SIZE-Const.STACK_OFF; ++i) {
 		} else {						// RT priority is above Thread priorities
 			priority = prio+MAX_PRIORITY+RT_BASE;
 		}
+		lck_pri[0] = priority; // Setting thread's priority as initial bread crumb priority
 		state = CREATED;
 		isEvent = false;
 
@@ -347,6 +348,7 @@ for (int i=0; i<Const.STACK_SIZE-Const.STACK_OFF; ++i) {
 		for (th = head; th!=null; th = th.lower) {
 			s = Scheduler.sched[th.cpuId];
 			s.ref[s.tmp] = th;
+			s.pri[s.tmp] = th.lck_pri[th.lck_ptr];
 			th.nr = s.tmp;
 			if (th.isEvent) {
 				s.event[s.tmp] = Scheduler.EV_WAITING;

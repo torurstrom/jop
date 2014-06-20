@@ -150,6 +150,7 @@ package jop_types is
 	type sync_in_type is record
 		req	: std_logic;
 		op	: std_logic;
+		wr	: std_logic;
 		data	: std_logic_vector(31 downto 0);
 		s_in	: std_logic;
 	end record;
@@ -157,10 +158,11 @@ package jop_types is
 	type sync_out_type is record
 		status	: std_logic;
 		halted  : std_logic;
+		own  : std_logic;
 		s_out	: std_logic;
 	end record;
 	
-	constant NO_SYNC : sync_out_type := (status => '0', halted => '0', s_out => '0');
+	constant NO_SYNC : sync_out_type := (status => '0', halted => '0', own => '0', s_out => '0');
 	type sync_in_array_type is array (integer range <>) of sync_in_type;
 	type sync_out_array_type is array (integer range <>) of sync_out_type;
 

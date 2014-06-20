@@ -586,7 +586,7 @@ public class GC {
 				}
 				
 				//Add scope info to object's handler field
-				Native.wrMem(0x80000000 | sc.level, ptr+OFF_SCOPE_LEVEL);
+				Native.wrMem(Const.DEFAULT_CEILING<<16 | sc.level, ptr+OFF_SCOPE_LEVEL);
 				
 				// Add scoped memory area info into objects handle
 				// TODO: Choose an appropriate field since we also want scope level info in handle 
@@ -710,7 +710,7 @@ public class GC {
 				}
 				
 				//Add scope info to array's handler field
-				Native.wrMem(0x80000000 | sc.level, ptr+OFF_SCOPE_LEVEL);
+				Native.wrMem(Const.DEFAULT_CEILING<<16 | sc.level, ptr+OFF_SCOPE_LEVEL);
 				
 				// Add scoped memory area info into array handle
 				// TODO: Choose an appropriate field since we also want scope level info in handle

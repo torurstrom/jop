@@ -206,7 +206,7 @@ begin
 
 	cpu_identity <= std_logic_vector(to_unsigned(cpu_id,32));
 	rdy_cnt <= "11" when 
-		sync_out.halted='1' or	dly_block='1' else "00";
+		sync_out.halted='1' or dly_block='1' else "00";
 	
 --
 --	read cnt values
@@ -231,7 +231,7 @@ begin
 					rd_data(7 downto 0) <= exc_type;
 					rd_data(31 downto 8) <= (others => '0');
 				when "0101" =>
-					rd_data(0) <= sync_out.halted;
+					rd_data(0) <= not(sync_out.own);
 					rd_data(1) <= sync_out.status;
 					rd_data(31 downto 2) <= (others => '0');				
 				when "0110" =>
@@ -462,12 +462,13 @@ begin
 				when "0101" =>
 					sync_in.req <= '1';
 					sync_in.data <= wr_data;
-					sync_in.op <= '0';
+					sync_in.wr <= '0';
 				when "0110" =>
 					-- processor id is read only so use it for lock release
 					sync_in.req <= '1';
 					sync_in.data <= wr_data;
 					sync_in.op <= '1';
+					sync_in.wr <= '1';
 				when "0111" =>
 					sync_in.s_in <= wr_data(0);
 				when "1000" =>
@@ -476,6 +477,11 @@ begin
 					clearall <= '1';
 				when "1100" =>
 					-- reserved for performance counters
+				when "1101" =>
+					sync_in.req <= '1';
+					sync_in.data <= wr_data;
+					sync_in.op <= '0';
+					sync_in.wr <= '1';
 				when "1010" =>		-- dely 'instruction'
 					dly_timeout <= wr_data;
 					dly_block <= '1';

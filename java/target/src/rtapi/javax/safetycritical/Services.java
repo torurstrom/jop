@@ -47,7 +47,7 @@ public class Services
 	  int ref = Native.toInt(O);
 	  int pri_field = Native.rdMem(ref + GC.OFF_PRI);
 	  // Clear any previous priority and write the new one
-	  pri_field = (pri<<16)|(pri_field&0xFFFF0000);
+	  pri_field = (pri<<16)|(pri_field&0x0000FFFF);
 	  Native.wrMem(pri_field, ref + GC.OFF_PRI);
   }
 
