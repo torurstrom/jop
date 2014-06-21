@@ -1481,6 +1481,21 @@ jopsys_lock:
 			wait
 			
 jopsys_lock_loop:
+
+			// disable interrupts
+			ldi	io_int_ena
+			stmwa				// write ext. mem address
+			ldi	0
+			stmwd				// write ext. mem data
+			wait
+			wait
+			
+			// request the lock status
+			ldi	io_lck_stat
+			stmwa				// write ext. mem address
+			stmwd				// write ext. mem data
+			wait
+			wait
 			
 			// read value from islu
 			ldi io_lck_stat
@@ -1508,7 +1523,7 @@ jopsys_lock_loop:
 			ldi 1
 			sub
 			nop
-			bz jopsys_lock_retry
+			bz jopsys_lock_loop
 			nop
 			nop
 			
@@ -1520,31 +1535,6 @@ jopsys_lock_loop:
 			wait
 			wait
 			nop nxt
-			
-jopsys_lock_retry:
-
-			// disable interrupts
-			ldi	io_int_ena
-			stmwa				// write ext. mem address
-			ldi	0
-			stmwd				// write ext. mem data
-			wait
-			wait
-			
-			// request the lock status
-			ldi	io_lck_stat
-			stmwa				// write ext. mem address
-			stmwd				// write ext. mem data
-			wait
-			wait
-			
-			// just to jump to jopsys_lock_loop
-			ldi 1
-			nop
-			nop
-			bnz jopsys_lock_loop
-			nop
-			nop
 			
 jopsys_lock_ok:        
 			pop nxt

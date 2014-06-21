@@ -2,7 +2,7 @@
 --
 --  This file is a part of JOP, the Java Optimized Processor
 --
---  Copyright (C) 2014, TÃƒÂ³rur BiskopstÃƒÂ¸ StrÃƒÂ¸m (torur.strom@gmail.com)
+--  Copyright (C) 2014, Tórur Biskopstø Strøm (torur.strom@gmail.com)
 --
 --  This program is free software: you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ architecture rtl of ihlu is
 	type REQ_CNT_ARR is array (0 to lck_cnt-1) of integer range 0 to 255; -- Defines how many lock entries are allowed
 	signal req_cnt : REQ_CNT_ARR;
 	subtype CPU_CNT_TYPE is integer range 0 to cpu_cnt-1;
-	signal cpu : CPU_CNT_TYPE;
+	signal cpu, ram_data_in, ram_data_out : CPU_CNT_TYPE;
 	type LCK_CPU_ARR is array (0 to lck_cnt-1) of CPU_CNT_TYPE;
 	signal current, queue_head, queue_tail : LCK_CPU_ARR;
 	
@@ -65,8 +65,7 @@ architecture rtl of ihlu is
 	
 	type state_type is (state_idle,state_ram,state_ram_dly,state_req,state_rd);
 	signal state: state_type;
-	
-	signal ram_data_in, ram_data_out : CPU_CNT_TYPE;
+
 	signal ram_write_address, ram_read_address : integer range 0 to lck_cnt*cpu_cnt-1;
 	signal ram_we : std_logic;
 	
@@ -79,7 +78,7 @@ begin
 	
 	out_sync: 
    for i in 0 to cpu_cnt-1 generate
-		sync_out(i).halted <= '1' when ((sync_in(i).req = '1') or (reg_i(i) /= reg_o(i))) else '0';
+		sync_out(i).halted <= '1' when (sync_in(i).req = '1' or reg_i(i) /= reg_o(i)) else '0';
       sync_out(i).s_out <= sync_in(0).s_in;  -- Bootup signal used in jvm.asm
 		sync_out(i).own <= own(i);
 		sync_out(i).status <= status(cpu);
@@ -189,7 +188,7 @@ begin
 				when state_rd =>
 					state <= state_idle;
 					reg_o(cpu) <= not(reg_o(cpu));
-					if(current(match_ptr) = cpu) then 
+					if(current(match_ptr) = cpu and empty(match_ptr) = '0') then 
 						own(cpu) <= '1';
 					else
 						own(cpu) <= '0';

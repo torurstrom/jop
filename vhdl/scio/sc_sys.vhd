@@ -477,14 +477,14 @@ begin
 					clearall <= '1';
 				when "1100" =>
 					-- reserved for performance counters
-				when "1101" =>
+				when "1010" =>		-- dely 'instruction'
+					dly_timeout <= wr_data;
+					dly_block <= '1';
+				when "1011" =>
 					sync_in.req <= '1';
 					sync_in.data <= wr_data;
 					sync_in.op <= '0';
 					sync_in.wr <= '1';
-				when "1010" =>		-- dely 'instruction'
-					dly_timeout <= wr_data;
-					dly_block <= '1';
 				when others =>
 					null;
 			end case;

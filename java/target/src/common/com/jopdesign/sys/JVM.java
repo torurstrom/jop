@@ -20,6 +20,8 @@
 
 package com.jopdesign.sys;
 
+import javax.safetycritical.Mission;
+
 class JVM {
 
 	private static void f_nop() { JVMHelp.noim(); /* jvm.asm */ }
@@ -821,7 +823,7 @@ class JVM {
 
 	private static Throwable f_athrow(Throwable t) {
 
-		Native.lock(0); // Just lock on address 0 as a form of Global lock
+		//Native.lock(0); // Just lock on address 0 as a form of Global lock
 		
 		if (Const.USE_RTTM) {
 			// abort transaction on any exception 
@@ -983,7 +985,7 @@ class JVM {
 	}
 	
 	private static void f_monitorenter(int objAddr) {
-		if(Startup.started) {
+		if(RtThreadImpl.mission) {
 			// We assume that object priorities are only manipulated during startup so this should be safe without synchronization
 			int pri = Native.rdMem(objAddr + GC.OFF_PRI)>>16;
 			Scheduler s = Scheduler.sched[Scheduler.sys.cpuId];
@@ -991,24 +993,28 @@ class JVM {
 			if(pri > th.lck_pri[th.lck_ptr]) {
 				// Update bread crumb
 				th.lck_ptr++;
-				th.lck_cnt[th.lck_ptr]++;
 				th.lck_pri[th.lck_ptr] = pri;
 				// Update the thread's priority
 				s.pri[s.active] = pri;
 			}
-			else {
-				// Lock's priority is equal or lower than current thread's so only update entry count
-				th.lck_cnt[th.lck_ptr]++;
-			}
+			th.lck_cnt[th.lck_ptr]++;
 		}
 		// Loops until the lock is actually acquired
-		Native.lock(objAddr);
+		Native.wr(objAddr,Const.IO_LOCK_REQ);
+		while(Native.rd(Const.IO_LOCK_STAT) != 0){
+			Native.wr(objAddr,Const.IO_LOCK_STAT);
+		}
+		Native.lock(0);
 	}
 	
 	private static void f_monitorexit(int objAddr) {
 		// Release lock before priority is manipulated
-		Native.unlock(objAddr);
-		if(Startup.started) {
+		Native.wr(objAddr,Const.IO_LOCK_REL);
+		while(Native.rd(Const.IO_LOCK_STAT) != 0){
+			Native.wr(objAddr,Const.IO_LOCK_STAT);
+		}
+		Native.unlock(0);
+		if(RtThreadImpl.mission) {
 			Scheduler s = Scheduler.sched[Scheduler.sys.cpuId];
 			RtThreadImpl th = s.ref[s.active];
 			th.lck_cnt[th.lck_ptr]--;
