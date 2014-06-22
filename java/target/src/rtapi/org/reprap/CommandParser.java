@@ -49,7 +49,7 @@ public class CommandParser extends PeriodicEventHandler
 	private M140 M140;
 	private T T;
 	
-	CommandParser(HostController hostController, CommandController commandController, RepRapController repRapController)
+	CommandParser(int affinity,HostController hostController, CommandController commandController, RepRapController repRapController)
 	{
 		super(new PriorityParameters(4),
 			  new PeriodicParameters(null, new RelativeTime(60,0)),
@@ -70,7 +70,7 @@ public class CommandParser extends PeriodicEventHandler
 		M113 = new M113(hostController, commandController);
 		M140 = new M140(hostController, commandController);
 		T = new T(hostController, commandController);
-		this.thread.setProcessor(3);
+		this.thread.setProcessor(affinity);
 	}
 	
 	@Override

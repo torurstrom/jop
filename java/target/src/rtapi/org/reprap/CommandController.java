@@ -22,24 +22,27 @@ import javax.realtime.RelativeTime;
 import javax.safetycritical.PeriodicEventHandler;
 import javax.safetycritical.StorageParameters;
 
+import com.jopdesign.sys.JVMHelp;
+
 
 public class CommandController extends PeriodicEventHandler
 {
 	private Command first;
 	private Command last;
 	
-	CommandController()
+	CommandController(int affinity)
 	{
 		super(new PriorityParameters(3),
 				new PeriodicParameters(null, new RelativeTime(20,0)),
 //				new StorageParameters(100, new long[]{100}, 0, 0), 0);
 				new StorageParameters(100, null, 0, 0), 100);
-		this.thread.setProcessor(2);
+		this.thread.setProcessor(affinity);
 	}
 	
 	@Override
 	public void handleAsyncEvent()
 	{
+		JVMHelp.wr('t');
 		Command	temp;
 		temp = getFirst();
 		if(temp != null)

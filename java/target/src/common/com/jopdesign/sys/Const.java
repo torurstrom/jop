@@ -182,7 +182,9 @@ public class Const {
 	public static final int IO_EXCPT = IO_BASE+4;
 	public static final int IO_LOCK_STAT = IO_BASE+5;
 	public static final int IO_LOCK_REL = IO_BASE+6; // mirrors CPU id, write-only
-	public static final int IO_LOCK_REQ = IO_BASE+11; // mirrors CPU id, write-only
+	public static final int IO_UNLOCK = IO_LOCK_REL;
+	public static final int IO_LOCK_REQ = IO_BASE+11;
+	public static final int IO_LOCK = IO_LOCK_REQ;
 	public static final int IO_CPU_ID = IO_BASE+6;
 	public static final int IO_SIGNAL = IO_BASE+7;
 	/**

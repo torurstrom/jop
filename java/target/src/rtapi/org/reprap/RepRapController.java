@@ -35,17 +35,17 @@ public class RepRapController extends PeriodicEventHandler
 	private static final int STEPS_PER_MINUTE = 30000;
 	private static final int MAX_TEMPERATURE = 220;
 
-	RepRapController()
+	RepRapController(int affinity)
 	{
 		super(new PriorityParameters(1),
 			  new PeriodicParameters(null, new RelativeTime(1,0)),
 //			  new StorageParameters(100, new long[]{100}, 0, 0), 0);
 			  new StorageParameters(100, null, 0, 0), 100);
-		this.thread.setProcessor(1);
+		this.thread.setProcessor(affinity);
 	}
 	
-	private ExpansionHeader reprap = ExpansionHeaderFactory.getExpansionHeaderFactory().getExpansionHeader();
-	//private RepRapSimulator reprap = new RepRapSimulator();
+	//private ExpansionHeader reprap = ExpansionHeaderFactory.getExpansionHeaderFactory().getExpansionHeader();
+	private RepRapSimulator reprap = new RepRapSimulator();
 	//private LedSwitch LS = LedSwitchFactory.getLedSwitchFactory().getLedSwitch();
 	
 	private Parameter current = new Parameter(0,0,0,0,E_MAX_FEED_RATE,200);//Current position

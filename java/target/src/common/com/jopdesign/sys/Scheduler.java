@@ -199,6 +199,7 @@ class Scheduler implements Runnable {
 		// cnt one higher for start thread (main or Runnable)
 		++cnt;
 		ref = new RtThreadImpl[cnt];
+		pri = new int[cnt];
 		next = new int[cnt];
 		event = new int[cnt];
 		tmp = cnt-1;

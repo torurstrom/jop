@@ -348,8 +348,15 @@ for (int i=0; i<Const.STACK_SIZE-Const.STACK_OFF; ++i) {
 		for (th = head; th!=null; th = th.lower) {
 			s = Scheduler.sched[th.cpuId];
 			s.ref[s.tmp] = th;
-			s.pri[s.tmp] = th.lck_pri[th.lck_ptr];
+			s.pri[s.tmp] = th.lck_pri[0];
 			th.nr = s.tmp;
+			if(lck_cnt_tot > 0) {
+				th.lck_pri = new int[lck_cnt_tot+2];
+				th.lck_pri[0] = th.priority;
+				th.lck_cnt = new int[lck_cnt_tot+2];
+				th.lck_cnt[0] = 1;
+			}
+			
 			if (th.isEvent) {
 				s.event[s.tmp] = Scheduler.EV_WAITING;
 			} else {
@@ -610,7 +617,18 @@ static void trace(int[] stack, int sp) {
 }
 
 
-
+  // Not thread safe, should only be called by a single thread
+  private static int lck_cnt_tot; 
+  public static void setCeiling(Object O, int pri) {
+	int ref = Native.toInt(O);
+    int pri_field = Native.rdMem(ref + GC.OFF_PRI);
+    // Clear any previous priority and write the new one
+    pri_field = (pri<<16)|(pri_field&0x0000FFFF);
+    Native.wrMem(pri_field, ref + GC.OFF_PRI);
+    if(pri != Const.DEFAULT_CEILING) {
+    	lck_cnt_tot++;
+    }
+  }
 
 
 }

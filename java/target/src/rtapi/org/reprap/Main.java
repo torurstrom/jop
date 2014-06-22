@@ -17,10 +17,12 @@
 package org.reprap;
 
 import javax.realtime.PriorityParameters;
+import javax.realtime.Schedulable;
 import javax.safetycritical.Mission;
 import javax.safetycritical.MissionSequencer;
 import javax.safetycritical.PeriodicEventHandler;
 import javax.safetycritical.Safelet;
+import javax.safetycritical.Services;
 import javax.safetycritical.StorageParameters;
 import javax.safetycritical.JopSystem;
 
@@ -82,10 +84,11 @@ public class Main implements Safelet
 			@Override
 			protected void initialize()
 			{
-				hostController = new HostController();
-				repRapController = new RepRapController();
-				commandController = new CommandController();
-				commandParser = new CommandParser(hostController,commandController,repRapController);
+				hostController = new HostController(0);
+				repRapController = new RepRapController(0);
+				commandController = new CommandController(0);
+				commandParser = new CommandParser(0,hostController,commandController,repRapController);
+				Services.setCeiling(hostController, 3000);
 			}
 		}
 	}

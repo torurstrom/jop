@@ -23,6 +23,7 @@ import javax.safetycritical.PeriodicEventHandler;
 import javax.safetycritical.StorageParameters;
 
 import com.jopdesign.io.*;
+import com.jopdesign.sys.JVMHelp;
 
 public class HostController extends PeriodicEventHandler
 {
@@ -41,16 +42,16 @@ public class HostController extends PeriodicEventHandler
 	private boolean comment = false;
 	private char[] output = new char[14];
 	
-	private SerialPort host = IOFactory.getFactory().getSerialPort();
-	//private HostSimulator host = new HostSimulator();
+	//private SerialPort host = IOFactory.getFactory().getSerialPort();
+	private HostSimulator host = new HostSimulator();
 	
-	HostController()
+	HostController(int affinity)
 	{
 		super(new PriorityParameters(2),
 			  new PeriodicParameters(null, new RelativeTime(1,0)),
 //			  new StorageParameters(35, new long[]{35},0,0), 0);
 			  new StorageParameters(35, null,0,0), 35);
-		this.thread.setProcessor(0);
+		this.thread.setProcessor(affinity);
 	}
 	
 	synchronized private void setInputStatus(boolean status)
@@ -66,6 +67,7 @@ public class HostController extends PeriodicEventHandler
 	@Override
 	public void handleAsyncEvent()
 	{
+		JVMHelp.wr('c');
 		int length = outputBuffer.copy(output);
 		for (int i = 0; i < length; i++) //@WCA loop = 14
 		{

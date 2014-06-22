@@ -985,12 +985,16 @@ class JVM {
 	}
 	
 	private static void f_monitorenter(int objAddr) {
+		// Loops until the lock is actually acquired
+		Native.lock(objAddr);
+		// Sets the priority after the lock is acquired
 		if(RtThreadImpl.mission) {
 			// We assume that object priorities are only manipulated during startup so this should be safe without synchronization
 			int pri = Native.rdMem(objAddr + GC.OFF_PRI)>>16;
 			Scheduler s = Scheduler.sched[Scheduler.sys.cpuId];
 			RtThreadImpl th = s.ref[s.active];
 			if(pri > th.lck_pri[th.lck_ptr]) {
+				//JVMHelp.wr("update\n");
 				// Update bread crumb
 				th.lck_ptr++;
 				th.lck_pri[th.lck_ptr] = pri;
@@ -999,21 +1003,11 @@ class JVM {
 			}
 			th.lck_cnt[th.lck_ptr]++;
 		}
-		// Loops until the lock is actually acquired
-		Native.wr(objAddr,Const.IO_LOCK_REQ);
-		while(Native.rd(Const.IO_LOCK_STAT) != 0){
-			Native.wr(objAddr,Const.IO_LOCK_STAT);
-		}
-		Native.lock(0);
 	}
 	
 	private static void f_monitorexit(int objAddr) {
 		// Release lock before priority is manipulated
-		Native.wr(objAddr,Const.IO_LOCK_REL);
-		while(Native.rd(Const.IO_LOCK_STAT) != 0){
-			Native.wr(objAddr,Const.IO_LOCK_STAT);
-		}
-		Native.unlock(0);
+		Native.unlock(objAddr);
 		if(RtThreadImpl.mission) {
 			Scheduler s = Scheduler.sched[Scheduler.sys.cpuId];
 			RtThreadImpl th = s.ref[s.active];

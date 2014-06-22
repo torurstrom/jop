@@ -1465,6 +1465,7 @@ saload:
 			ldmrd nxt
 
 jopsys_lock:
+			dup					// duplicate object address
 			// disable interrupts
 			ldi	io_int_ena
 			stmwa				// write ext. mem address
@@ -1489,7 +1490,8 @@ jopsys_lock_loop:
 			stmwd				// write ext. mem data
 			wait
 			wait
-			
+
+			dup					// duplicate object address
 			// request the lock status
 			ldi	io_lck_stat
 			stmwa				// write ext. mem address
@@ -1536,7 +1538,8 @@ jopsys_lock_loop:
 			wait
 			nop nxt
 			
-jopsys_lock_ok:        
+jopsys_lock_ok:
+			pop
 			pop nxt
 
 jopsys_unlock:

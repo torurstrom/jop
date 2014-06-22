@@ -13,8 +13,7 @@ import javax.safetycritical.annotate.SCJAllowed;
 import javax.safetycritical.annotate.SCJRestricted;
 
 import com.jopdesign.sys.Const;
-import com.jopdesign.sys.GC;
-import com.jopdesign.sys.Native;
+import com.jopdesign.sys.RtThreadImpl;
 
 import static javax.safetycritical.annotate.Phase.INITIALIZATION;
 
@@ -44,11 +43,7 @@ public class Services
   @SCJAllowed(LEVEL_1)
   @SCJRestricted(phase = INITIALIZATION)
   public static void setCeiling(Object O, int pri) {
-	  int ref = Native.toInt(O);
-	  int pri_field = Native.rdMem(ref + GC.OFF_PRI);
-	  // Clear any previous priority and write the new one
-	  pri_field = (pri<<16)|(pri_field&0x0000FFFF);
-	  Native.wrMem(pri_field, ref + GC.OFF_PRI);
+	  RtThreadImpl.setCeiling(O,pri);
   }
 
   /**
