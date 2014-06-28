@@ -1464,8 +1464,7 @@ saload:
 			wait
 			ldmrd nxt
 
-jopsys_lock:
-			dup					// duplicate object address
+jopsys_lck_req:
 			// disable interrupts
 			ldi	io_int_ena
 			stmwa				// write ext. mem address
@@ -1476,24 +1475,6 @@ jopsys_lock:
 			
 			// request the global lock
 			ldi	io_lck_req
-			stmwa				// write ext. mem address
-			stmwd				// write ext. mem data
-			wait
-			wait
-			
-jopsys_lock_loop:
-
-			// disable interrupts
-			ldi	io_int_ena
-			stmwa				// write ext. mem address
-			ldi	0
-			stmwd				// write ext. mem data
-			wait
-			wait
-
-			dup					// duplicate object address
-			// request the lock status
-			ldi	io_lck_stat
 			stmwa				// write ext. mem address
 			stmwd				// write ext. mem data
 			wait
@@ -1513,36 +1494,9 @@ jopsys_lock_loop:
 			stmwd				// write ext. mem data
 			wait
 			wait
-			
-			// if (value from islu == 0) exit
-			dup
-			nop
-			bz jopsys_lock_ok
-			nop
-			nop
-			
-			// if (value from islu == 1) continue
-			ldi 1
-			sub
-			nop
-			bz jopsys_lock_loop
-			nop
-			nop
-			
-			// else throw exception
-			ldi io_exc
-			stmwa
-			ldi exc_mon
-			stmwd
-			wait
-			wait
 			nop nxt
-			
-jopsys_lock_ok:
-			pop
-			pop nxt
 
-jopsys_unlock:
+jopsys_lck_rel:
 
 			// disable interrupts
 			ldi	io_int_ena
@@ -1558,6 +1512,39 @@ jopsys_unlock:
 			stmwd				// write ext. mem data
 			wait
 			wait
+			
+			// enable interrupts
+			ldi	io_int_ena
+			stmwa
+			ldi 1
+			stmwd				// write ext. mem data
+			wait
+			wait
+			nop nxt
+			
+jopsys_lck_stat:
+
+			// disable interrupts
+			ldi	io_int_ena
+			stmwa				// write ext. mem address
+			ldi	0
+			stmwd				// write ext. mem data
+			wait
+			wait
+
+			// request the lock status
+			ldi	io_lck_stat
+			stmwa				// write ext. mem address
+			stmwd				// write ext. mem data
+			wait
+			wait
+			
+			// read value from islu
+			ldi io_lck_stat
+			stmra
+			wait
+			wait
+			ldmrd
 			
 			// enable interrupts
 			ldi	io_int_ena

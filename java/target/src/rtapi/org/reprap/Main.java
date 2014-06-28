@@ -85,9 +85,9 @@ public class Main implements Safelet
 			protected void initialize()
 			{
 				hostController = new HostController(0);
-				repRapController = new RepRapController(0);
-				commandController = new CommandController(0);
-				commandParser = new CommandParser(0,hostController,commandController,repRapController);
+				repRapController = new RepRapController(1);
+				commandController = new CommandController(2);
+				commandParser = new CommandParser(3,hostController,commandController,repRapController);
 				Services.setCeiling(hostController, 3000);
 			}
 		}

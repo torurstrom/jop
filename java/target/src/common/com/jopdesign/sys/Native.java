@@ -53,8 +53,9 @@ public class Native {
 	public static native double toDouble(long l);
 	public static native RtThreadImpl toRtThreadImpl(int i);
 
-	public static native void lock(int ref);
-	public static native void unlock(int ref);
+	public static native int lckReq(int ref);
+	public static native void lckRel(int ref);
+	public static native int lckStat(int ref);
 	public static native int condMove(int a, int b, boolean cond);
 	public static native Object condMoveRef(Object a, Object b, boolean cond);
 	public static native void invalidate();

@@ -823,7 +823,14 @@ class JVM {
 
 	private static Throwable f_athrow(Throwable t) {
 
-		//Native.lock(0); // Just lock on address 0 as a form of Global lock
+		int stat = Native.lckReq(0); // Just lock on address 0 as a form of Global lock
+		while(stat != 0) { //@WCA loop = 0
+			if(stat > 2) {
+				break;
+			}
+			stat = Native.lckStat(0);
+		}
+		
 		
 		if (Const.USE_RTTM) {
 			// abort transaction on any exception 
@@ -877,7 +884,7 @@ class JVM {
 
 						// return with faked frame
 						Native.setSP(fp+4);
-						Native.unlock(0);
+						Native.lckRel(0);
 						return t;
 					}
 				}
@@ -888,7 +895,7 @@ class JVM {
 				// TODO: object to lock is found somewhere else for static methods, pass null for now
 				i = Native.rdIntMem(vp); // reference is first argument of caller
 				if (isStat != 0) i = 0;
- 				Native.unlock(i);
+ 				Native.lckRel(i);
 			}
 
 			// go up one frame
@@ -985,8 +992,6 @@ class JVM {
 	}
 	
 	private static void f_monitorenter(int objAddr) {
-		// Loops until the lock is actually acquired
-		Native.lock(objAddr);
 		// Sets the priority after the lock is acquired
 		if(RtThreadImpl.mission) {
 			// We assume that object priorities are only manipulated during startup so this should be safe without synchronization
@@ -1003,11 +1008,19 @@ class JVM {
 			}
 			th.lck_cnt[th.lck_ptr]++;
 		}
+		// Loops until the lock is actually acquired
+		int stat = Native.lckReq(objAddr);
+		while(stat != 0) { //@WCA loop = 0
+			if(stat != 1) {
+				throw JVMHelp.IMSExc;
+			}
+			stat = Native.lckStat(objAddr);
+		}
 	}
 	
 	private static void f_monitorexit(int objAddr) {
 		// Release lock before priority is manipulated
-		Native.unlock(objAddr);
+		Native.lckRel(objAddr);
 		if(RtThreadImpl.mission) {
 			Scheduler s = Scheduler.sched[Scheduler.sys.cpuId];
 			RtThreadImpl th = s.ref[s.active];

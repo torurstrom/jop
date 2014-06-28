@@ -200,7 +200,7 @@ begin
 	--constant lock_cnt_width : integer := integer(ceil(log2(real(lock_cnt)))); 
 	
 					ram_read_address <= match_ptr*cpu_cnt + queue_head(match_ptr);
-					ram_write_address <= match_ptr*cpu_cnt + queue_head(match_ptr);
+					ram_write_address <= match_ptr*cpu_cnt + queue_tail(match_ptr);
 					ram_data_in <= cpu;
 					
 				when state_ram_dly =>
