@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2012, TÃ³rur BiskopstÃ¸ StrÃ¸m (torur.strom@gmail.com)
+  Copyright (C) 2012, Tórur Biskopstø¸ Strøm (torur.strom@gmail.com)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -100,58 +100,5 @@ public class CharacterBuffer
 			}
 		}
 		count += characters.length;
-	}
-	
-	synchronized public void add(char[] characters1,char[] characters2)
-	{
-		addUnSafe(characters1);
-		addUnSafe(characters2);
-	}
-	
-	synchronized public void add(char[] characters1,char[] characters2,char[] characters3)
-	{
-		addUnSafe(characters1);
-		addUnSafe(characters2);
-		addUnSafe(characters3);
-	}
-	
-	synchronized public void add(char[] characters1,char[] characters2,char[] characters3, char[] characters4)
-	{
-		addUnSafe(characters1);
-		addUnSafe(characters2);
-		addUnSafe(characters3);
-		addUnSafe(characters4);
-	}
-	
-	synchronized public void add(char[] characters1,char[] characters2,char[] characters3, char[] characters4, char[] characters5)
-	{
-		addUnSafe(characters1);
-		addUnSafe(characters2);
-		addUnSafe(characters3);
-		addUnSafe(characters4);
-		addUnSafe(characters5);
-	}
-	
-	private void addUnSafe(char[] characters)
-	{
-		if(characters == null)
-		{
-			return;
-		}
-		int length = characters.length;
-		if(chars.length < count+length)
-		{
-			length = chars.length-count;
-		}
-		for(int i = 0; i < length; i++) //@WCA loop=64
-		{
-			chars[position] = characters[i];
-			position++;
-			if(position == chars.length)
-			{
-				position = 0;
-			}
-		}
-		count += length;
 	}
 }
