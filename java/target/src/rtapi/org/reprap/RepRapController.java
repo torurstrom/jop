@@ -75,12 +75,12 @@ public class RepRapController extends PeriodicEventHandler
 	
 	private boolean absolute = true;
 	
-	synchronized private boolean isAbsolute()
+	private boolean isAbsolute()
 	{
 		return absolute;
 	}
 	
-	synchronized public void setAbsolute(boolean absolute)
+	public void setAbsolute(boolean absolute)
 	{
 		this.absolute = absolute;
 	}

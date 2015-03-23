@@ -90,7 +90,7 @@ public class CharacterBuffer
 		{
 			return;
 		}
-		for(int i = 0; i < characters.length; i++) //@WCA loop=64
+		for(int i = 0; i < characters.length; i++) //@WCA loop=32
 		{
 			chars[position] = characters[i];
 			position++;

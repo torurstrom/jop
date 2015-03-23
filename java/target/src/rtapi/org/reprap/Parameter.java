@@ -46,7 +46,7 @@ public class Parameter
 		this.S = Integer.MIN_VALUE;
 	}
 	
-	synchronized public void copy(Parameter source)
+	public void copy(Parameter source)
 	{
 		X = source.X;
 		Y = source.Y;
