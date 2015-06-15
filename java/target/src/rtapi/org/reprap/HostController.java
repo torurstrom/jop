@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2012, TÃ³rur BiskopstÃ¸ StrÃ¸m (torur.strom@gmail.com)
+  Copyright (C) 2012, Tórur Biskopstø Strøm (torur.strom@gmail.com)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package org.reprap;
 
 import javax.realtime.PeriodicParameters;
@@ -23,178 +23,156 @@ import javax.safetycritical.PeriodicEventHandler;
 import javax.safetycritical.StorageParameters;
 
 import com.jopdesign.io.*;
-import com.jopdesign.sys.JVMHelp;
 
-public class HostController extends PeriodicEventHandler
-{
+public class HostController extends PeriodicEventHandler {
 	public final static int MAX_STRING_LENGTH = 64;
-	
-	private final static char[] OK = {'o','k',' '};
-	private final static char[] RS = {'r','s',' '};
-	private final static char[] DEBUG = {' ','/','/'};
-	private final static char[] NEWLINE = {'\n'};
-	private final static char[] COMMAND_TOO_LONG = {'C','o','m','m','a','n','d',' ','t','o','o',' ','l','o','n','g','!'};
-	
+
+	private final static char[] OK = { 'o', 'k', ' ' };
+	private final static char[] RS = { 'r', 's', ' ' };
+	private final static char[] DEBUG = { ' ', '/', '/' };
+	private final static char[] NEWLINE = { '\n' };
+	private final static char[] COMMAND_TOO_LONG = { 'C', 'o', 'm', 'm', 'a',
+			'n', 'd', ' ', 't', 'o', 'o', ' ', 'l', 'o', 'n', 'g', '!' };
+
 	private CharacterBuffer inputBuffer = new CharacterBuffer(MAX_STRING_LENGTH);
 	private int inputCount = 0;
 	private boolean inputStatus = false;
-	private CharacterBuffer outputBuffer = new CharacterBuffer(MAX_STRING_LENGTH);
+	private CharacterBuffer outputBuffer = new CharacterBuffer(
+			MAX_STRING_LENGTH);
 	private boolean comment = false;
 	private char[] output = new char[14];
-	
-	//private SerialPort host = IOFactory.getFactory().getSerialPort();
-	private HostSimulator host = new HostSimulator();
-	
-	HostController(int affinity)
-	{
-		super(new PriorityParameters(2),
-			  new PeriodicParameters(null, new RelativeTime(1,0)),
-//			  new StorageParameters(35, new long[]{35},0,0), 0);
-			  new StorageParameters(35, null,0,0), 35);
-		this.thread.setProcessor(affinity);
+
+	private SerialPort host = IOFactory.getFactory().getSerialPort();
+
+	// private HostSimulator host = new HostSimulator();
+
+	HostController() {
+		super(new PriorityParameters(2), new PeriodicParameters(null,
+				new RelativeTime(1, 0)),
+		// new StorageParameters(35, new long[]{35},0,0), 0);
+				new StorageParameters(35, null, 0, 0), 35);
+		this.thread.setProcessor(0);
 	}
-	
-	synchronized private void setInputStatus(boolean status)
-	{
+
+	synchronized private void setInputStatus(boolean status) {
 		inputStatus = status;
 	}
-	
-	synchronized private boolean getInputStatus()
-	{
+
+	synchronized private boolean getInputStatus() {
 		return inputStatus;
 	}
-	
+
 	@Override
-	public void handleAsyncEvent()
-	{
-		JVMHelp.wr('c');
+	public void handleAsyncEvent() {
 		int length = outputBuffer.copy(output);
-		for (int i = 0; i < length; i++) //@WCA loop = 14
+		for (int i = 0; i < length; i++) // @WCA loop = 14
 		{
 			host.write(output[i]);
 		}
-		//Input buffer is still full so do nothing
-		if(getInputStatus())
-		{
+		// Input buffer is still full so do nothing
+		if (getInputStatus()) {
 			return;
 		}
-		for (int i = 0; i < 16; i++) //@WCA loop = 16
+		for (int i = 0; i < 16; i++) // @WCA loop = 16
 		{
 			char character;
-			if(!host.rxFull())
-			{
-				//No input
+			if (!host.rxFull()) {
+				// No input
 				return;
 			}
-			character = (char)host.read();
-			if(character == ';')
-			{
+			character = (char) host.read();
+			if (character == ';') {
 				comment = true;
-			}
-			else if(character == '\n')
-			{
+			} else if (character == '\n') {
 				comment = false;
-				if(inputCount > 0)
-				{
+				if (inputCount > 0) {
 					inputCount = 0;
 					setInputStatus(true);
 					return;
 				}
-			}
-			else if(!comment) //Ignore comments
+			} else if (!comment) // Ignore comments
 			{
-				if(inputBuffer.add(character))
-				{
+				if (inputBuffer.add(character)) {
 					inputCount++;
 				}
 			}
 		}
 	}
-	
-	void resendCommand(int lineNumber, char[] debug)
-	{
-		if(lineNumber > Integer.MIN_VALUE)
-		{
-			//outputBuffer.add(RS,intToChar(lineNumber),DEBUG,debug,NEWLINE);
-			outputBuffer.add(RS,intToChar(lineNumber),NEWLINE);
+
+	void resendCommand(int lineNumber, char[] debug) {
+
+		outputBuffer.add(RS);
+		if (lineNumber > Integer.MIN_VALUE) {
+			outputBuffer.add(intToChar(lineNumber));
 		}
-		else
-		{
-			//outputBuffer.add(RS,DEBUG,debug,NEWLINE);
-			outputBuffer.add(RS,NEWLINE);
-		}
-		
+		outputBuffer.add(NEWLINE);
+
 	}
-	
-	public void confirmCommand(char[] response)
-	{
-		outputBuffer.add(OK,response,NEWLINE);
+
+	public void confirmCommand(char[] response) {
+		outputBuffer.add(OK);
+		outputBuffer.add(response);
+		outputBuffer.add(NEWLINE);
 	}
-	
-	public void confirmCommand(char[] response1, char[] response2, char[] response3)
-	{
-		outputBuffer.add(OK,response1,response2,response3,NEWLINE);
+
+	public void confirmCommand(char[] response1, char[] response2,
+			char[] response3) {
+		outputBuffer.add(OK);
+		outputBuffer.add(response1);
+		outputBuffer.add(response2);
+		outputBuffer.add(response3);
+		outputBuffer.add(NEWLINE);
 	}
-	
-	int getLine(char[] buffer)
-	{
-		if(!getInputStatus())
-		{
+
+	int getLine(char[] buffer) {
+		if (!getInputStatus()) {
 			return 0;
 		}
 		int length = inputBuffer.copy(buffer);
-		//print(chars);
+		// print(chars);
 		setInputStatus(false);
 		return length;
 	}
-	
-	private static final char[] digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-		
-	public static char[] intToChar(int integer)
-	{
-		//////////From Integer////////////
-		int radix = 10;
-	    // For negative numbers, print out the absolute value w/ a leading '-'.
-	    // Use an array large enough for a binary number.
-	    char[] buffer = new char[33];
-	    int i = 33;
-	    boolean isNeg = false;
-	    if (integer < 0)
-		{
-	    	isNeg = true;
-	    	integer = -integer;
-		
-		    // When the value is MIN_VALUE, it overflows when made positive
-		    if (integer < 0)
-		    {
-		    	buffer[--i] = digits[(int) (Math.modulo10(-(integer + radix)))];
-		    	integer = -(Math.divs10(integer));
-		    }
-		}
-	    
-	    buffer[--i] = digits[Math.modulo10(integer)];
-    	integer = Math.divs10(integer);
-	    for(; integer > 0;) //@WCA loop = 33
-	    {
-	    	buffer[--i] = digits[Math.modulo10(integer)];
-	    	integer = Math.divs10(integer);
-	    }
 
-	    if (isNeg)
-	      buffer[--i] = '-';
-	    
-	    
-	    char[] newBuffer = new char[33-i];
-	    for (int j = 0; j < newBuffer.length; j++) //@WCA loop = 33
-	    {
-	    	newBuffer[j] = buffer[i++];
+	private static final char[] digits = { '0', '1', '2', '3', '4', '5', '6',
+			'7', '8', '9' };
+
+	public static char[] intToChar(int integer) {
+		// ////////From Integer////////////
+		int radix = 10;
+		// For negative numbers, print out the absolute value w/ a leading '-'.
+		// Use an array large enough for a binary number.
+		char[] buffer = new char[33];
+		int i = 33;
+		boolean isNeg = false;
+		if (integer < 0) {
+			isNeg = true;
+			integer = -integer;
+
+			// When the value is MIN_VALUE, it overflows when made positive
+			if (integer < 0) {
+				buffer[--i] = digits[(int) (Math.modulo10(-(integer + radix)))];
+				integer = -(Math.divs10(integer));
+			}
 		}
-	    return newBuffer;
+
+		buffer[--i] = digits[Math.modulo10(integer)];
+		integer = Math.divs10(integer);
+		for (; integer > 0;) // @WCA loop = 33
+		{
+			buffer[--i] = digits[Math.modulo10(integer)];
+			integer = Math.divs10(integer);
+		}
+
+		if (isNeg)
+			buffer[--i] = '-';
+
+		char[] newBuffer = new char[33 - i];
+		for (int j = 0; j < newBuffer.length; j++) // @WCA loop = 33
+		{
+			newBuffer[j] = buffer[i++];
+		}
+		return newBuffer;
 	}
-	
-	void print(char[] chars)
-	{
-		outputBuffer.add(chars);
-	}
-	
+
 }

@@ -56,7 +56,7 @@ QPROJ=cycmin cycbaseio cycbg dspio lego cycfpu cyc256x16 sopcmin usbmin cyccmp d
 ifeq ($(USB),true)
 	QPROJ=usbmin
 else
-	QPROJ=altde2-70
+	QPROJ=altde2-70reprap
 endif
 
 #
@@ -126,15 +126,20 @@ IPDEST=192.168.0.123
 ################################################################################
 
 # Jop RTS configuration
-USE_SCOPES=false
-USE_SCOPECHECKS=false
+USE_SCOPES=true
+USE_SCOPECHECKS=true
 ADD_REF_INFO=false
 MEASURE=true
 JOP_CONF_STR=USE_SCOPES=$(USE_SCOPES) USE_SCOPECHECKS=$(USE_SCOPECHECKS) ADD_REF_INFO=$(ADD_REF_INFO) MEASURE=$(MEASURE)
 
-P1=test
-P2=test
-P3=HelloWorld
+#P1=test
+#P2=test
+#P3=HelloWorld
+
+P1=rtapi
+P2=org/reprap
+P3=Main
+
 
 #
 # Run JVM Tests
@@ -179,8 +184,9 @@ JCOPTER_USE_WCA?=no
 #       WCET analysis
 #
 
-WCET_METHOD=measure
-# WCET_OPTIONS=
+#WCET_METHOD=org.reprap.CharacterBuffer.add\([C\)V
+WCET_METHOD=org.reprap.HostController.handleAsyncEvent
+WCET_OPTIONS=--jop.jop-rws 14 --jop.jop-wws 14
 
 ################## end of configuration section ###################
 
@@ -198,7 +204,7 @@ EXT_CP=java/lib/bcel-5.2.jar$(S)java/lib/jakarta-regexp-1.3.jar$(S)java/lib/RXTX
 #EXT_CP=java/lib/recompiled_bcel-5.2.jar$(S)java/lib/jakarta-regexp-1.3.jar$(S)java/lib/RXTXcomm.jar$(S)java/lib/lpsolve55j.jar
 
 #TOOLS_JFLAGS=-d $(TOOLS)/dist/classes -classpath $(EXT_CP) -sourcepath $(TOOLS)/src$(S)$(TARGET_SRC_PATH)/common
-TOOLS_JFLAGS=-g -d $(TOOLS)/dist/classes -classpath $(EXT_CP) -sourcepath $(TOOLS)/src$(S)$(TARGET_SRC_PATH)/common -encoding Latin1
+TOOLS_JFLAGS=-g -d $(TOOLS)/dist/classes -classpath $(EXT_CP) -sourcepath $(TOOLS)/src$(S)$(TARGET_SRC_PATH)/common -source 1.5 -target 1.5 -encoding Latin1
 
 PCTOOLS=java/pc
 PCTOOLS_JFLAGS=-g -d $(PCTOOLS)/dist/classes -sourcepath $(PCTOOLS)/src -encoding Latin1
