@@ -44,8 +44,8 @@ public class RepRapController extends PeriodicEventHandler
 		this.thread.setProcessor(affinity);
 	}
 	
-	//private ExpansionHeader reprap = ExpansionHeaderFactory.getExpansionHeaderFactory().getExpansionHeader();
-	private RepRapSimulator reprap = new RepRapSimulator();
+	private ExpansionHeader reprap = ExpansionHeaderFactory.getExpansionHeaderFactory().getExpansionHeader();
+	//private RepRapSimulator reprap = new RepRapSimulator();
 	//private LedSwitch LS = LedSwitchFactory.getLedSwitchFactory().getLedSwitch();
 	
 	private Parameter current = new Parameter(0,0,0,0,E_MAX_FEED_RATE,200);//Current position

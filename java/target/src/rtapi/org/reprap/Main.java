@@ -84,7 +84,7 @@ public class Main implements Safelet
 			@Override
 			protected void initialize()
 			{
-				hostController = new HostController(0);
+				hostController = new HostController();
 				repRapController = new RepRapController(1);
 				commandController = new CommandController(2);
 				commandParser = new CommandParser(3,hostController,commandController,repRapController);

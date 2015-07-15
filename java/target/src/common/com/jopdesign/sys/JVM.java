@@ -1010,7 +1010,7 @@ class JVM {
 		}
 		// Loops until the lock is actually acquired
 		int stat = Native.lckReq(objAddr);
-		while(stat != 0) { //@WCA loop = 0
+		while(stat != 0) { //@WCA loop = 1
 			if(stat != 1) {
 				throw JVMHelp.IMSExc;
 			}

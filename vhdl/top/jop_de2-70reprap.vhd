@@ -357,7 +357,7 @@ end process;
 	sync: entity work.ihlu generic map 
 	(
 		cpu_cnt => cpu_cnt,
-		lock_cnt => 32
+		lck_cnt => 32
 	)
 		port map
 		(
